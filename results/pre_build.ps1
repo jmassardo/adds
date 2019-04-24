@@ -1,0 +1,5 @@
+$pkg_origin="jmassardo"
+$pkg_name="adds"
+$pkg_version="0.1.0"
+$pkg_release="20190424154057"
+$pkg_ident="jmassardo/adds/0.1.0/20190424154057"
