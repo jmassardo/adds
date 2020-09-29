@@ -1,1 +1,3 @@
 results/*
+.kitchen/*
+.kitchen.local.yml

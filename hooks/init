@@ -1,0 +1,21 @@
+Function Test-Feature {
+    Get-CimInstance -ClassName Win32_ComputerSystem | Where-Object { $_. Roles -like "Primary_Domain_Controller" }
+}
+
+if (!(Test-Feature)) {
+Import-Module ADDSDeployment
+Install-ADDSForest -CreateDnsDelegation:${{cfg.CreateDnsDelegation}} `
+                   -DatabasePath "{{cfg.DatabasePath}}" `
+                   -DomainMode {{cfg.DomainMode}} `
+                   -DomainName "{{cfg.DomainName}}" `
+                   -DomainNetbiosName "{{cfg.DomainNetbiosName}}" `
+                   -ForestMode {{cfg.ForestMode}} `
+                   -InstallDns:${{cfg.InstallDns}} `
+                   -LogPath "{{cfg.LogPath}}" `
+                   -NoRebootOnCompletion:${{cfg.NoRebootOnCompletion}} `
+                   -SafeModeAdministratorPassword $(ConvertTo-SecureString -String "{{cfg.SafeModeAdministratorPassword}}" -AsPlainText -Force) `
+                   -SysvolPath "{{cfg.SysvolPath}}" `
+                   -Force:${{cfg.Force}}
+
+Restart-Computer -Force
+}

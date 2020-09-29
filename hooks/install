@@ -1,28 +1,5 @@
 function Test-Feature {
-    Write-Output "Check if DirectoryServices-DomainController is enabled..."
     $(dism /online /get-featureinfo /featurename:DirectoryServices-DomainController) -contains "State : Enabled"
-}
-
-Function Install-Domain {
-    $script={
-        Import-Module ADDSDeployment
-        Install-ADDSForest -CreateDnsDelegation:${{cfg.CreateDnsDelegation}} `
-                        -DatabasePath "{{cfg.DatabasePath}}" `
-                        -DomainMode {{cfg.DomainMode}} `
-                        -DomainName "{{cfg.DomainName}}" `
-                        -DomainNetbiosName "{{cfg.DomainNetbiosName}}" `
-                        -ForestMode {{cfg.ForestMode}} `
-                        -InstallDns:${{cfg.InstallDns}} `
-                        -LogPath "{{cfg.LogPath}}" `
-                        -NoRebootOnCompletion:${{cfg.NoRebootOnCompletion}} `
-                        -SafeModeAdministratorPassword $(ConvertTo-SecureString -String "{{cfg.SafeModeAdministratorPassword}}" -AsPlainText -Force) `
-                        -SysvolPath "{{cfg.SysvolPath}}" `
-                        -Force:${{cfg.Force}}
-    }
-    Write-Output "Spawning new PowerShell session to perform AD Install"
-    Start-Process powershell -ArgumentList "-NonInteractive -command & {$script} -Wait"
-    # Add wait/check to hold install hook until dcpromo is finished
-    # Add validation step to see if server was successfully promoted
 }
 
 if (!(Test-Feature)) {
@@ -31,15 +8,9 @@ if (!(Test-Feature)) {
     Write-Output "Enabling RSAT Tools"
     dism /online /enable-feature /featurename:DirectoryServices-DomainController-Tools /all
     Install-Domain
-    # Add validation step to see if server was successfully promoted
 
-    # Do we need this? should this get replaced with try/catches around the actual dism commands?
     if (!(Test-Feature)) {
         Write-Output "DirectoryServices-DomainController was not enabled!"
         exit 1
     }
-
-    # Now that the system is successfully promoted, seed AD with users
-} else {
-    # TODO: Add more logic to determine if the system was successfully promoted to a DC. If not, promote it.
 }
